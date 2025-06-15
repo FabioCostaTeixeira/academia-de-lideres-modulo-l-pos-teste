@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import SuccessPopup from "./SuccessPopup";
 
 // Função para aplicar máscara visual no CPF
 function formatCpfMask(cpf: string) {
@@ -21,6 +22,7 @@ const PreTestForm = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     nomeCompleto: "",
@@ -218,6 +220,8 @@ const PreTestForm = () => {
         description: "Seus dados foram salvos com sucesso.",
       });
 
+      setShowSuccess(true);
+
       // Reset form
       setFormData({
         nomeCompleto: "",
@@ -263,6 +267,7 @@ const PreTestForm = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
+      {showSuccess && <SuccessPopup onClose={handleCloseSuccess} />}
       {/* Header */}
       <div className="text-center mb-8">
         <div className="mb-6">
@@ -434,4 +439,5 @@ const PreTestForm = () => {
     </div>
   );
 };
+
 export default PreTestForm;
