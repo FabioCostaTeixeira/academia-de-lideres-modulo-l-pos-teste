@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,10 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import SuccessPopup from "./SuccessPopup";
+import { supabase } from "@/integrations/supabase/client";
 
-// Função para aplicar máscara visual no CPF
 function formatCpfMask(cpf: string) {
-  const numbers = cpf.replace(/\D/g, "").slice(0, 11); // Limita a 11 dígitos numéricos
+  const numbers = cpf.replace(/\D/g, "").slice(0, 11);
   return numbers
     .replace(/^(\d{3})(\d)/, '$1.$2')
     .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
@@ -146,7 +147,6 @@ const PreTestForm = () => {
   const totalQuestions = questions.length;
 
   const handleInputChange = (field: string, value: string) => {
-    // Se o campo for CPF, salva apenas os dígitos
     if (field === "cpf") {
       const onlyNumbers = value.replace(/\D/g, "").slice(0, 11);
       setFormData((prev) => ({
@@ -198,6 +198,49 @@ const PreTestForm = () => {
     return true;
   };
 
+  // MAP fields to columns
+  const toPosTesteColumns = () => {
+    // Map the form fields to pos_teste columns using the exact col names from Supabase
+    // (see schema, using | as break only for reference)
+    /*
+      - "Nome Completo"
+      - "CPF"
+      - "01) No seu entendimento, como é classificado a cultura brasile"
+      - "02) Identifique três paradigmas (modelos mentais) de irrespons"
+      - "03) Assinale a simples característica de LIDERANÇA, para prev"
+      - "04) O que fez a Fórmula 1 reduzir drasticamente as fatalidades"
+      - "05) Qual o primeiro passo a ser dado para mudança, dentro dos "
+      - "06) Segundo a pesquisa da GALLUP quantos porcento de pessoas es"
+      - "07) Qual a fórmula extraordinária de resultados sustentáveis"
+      - "08) Qual o pilar que serve como base de sustentação da Lidera"
+      - "09) Como se constrói a CONFIANÇA do líder junto a equipe?"
+      - "10) Defina Comportamento?"
+    */
+    return {
+      "Nome Completo": formData.nomeCompleto,
+      "CPF": formData.cpf,
+      "01) No seu entendimento, como é classificado a cultura brasile":
+        formData.pergunta01,
+      "02) Identifique três paradigmas (modelos mentais) de irrespons":
+        formData.pergunta02,
+      "03) Assinale a simples característica de LIDERANÇA, para prev":
+        formData.pergunta03,
+      "04) O que fez a Fórmula 1 reduzir drasticamente as fatalidades":
+        formData.pergunta04,
+      "05) Qual o primeiro passo a ser dado para mudança, dentro dos ":
+        formData.pergunta05,
+      "06) Segundo a pesquisa da GALLUP quantos porcento de pessoas es":
+        formData.pergunta06,
+      "07) Qual a fórmula extraordinária de resultados sustentáveis":
+        formData.pergunta07,
+      "08) Qual o pilar que serve como base de sustentação da Lidera":
+        formData.pergunta08,
+      "09) Como se constrói a CONFIANÇA do líder junto a equipe?":
+        formData.pergunta09,
+      "10) Defina Comportamento?": formData.pergunta10,
+    };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
@@ -210,11 +253,21 @@ const PreTestForm = () => {
     }
     setIsSubmitting(true);
     try {
-      // Here we would integrate with Supabase
-      console.log("Form data to submit:", formData);
+      // Insert into Supabase
+      const insertData = toPosTesteColumns();
+      const { error } = await supabase.from("pos_teste").insert(insertData);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (error) {
+        console.error("Supabase insert error:", error);
+        toast({
+          title: "Erro ao Enviar",
+          description: "Ocorreu um erro ao enviar o formulário. Tente novamente.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       toast({
         title: "Formulário Enviado com Sucesso!",
         description: "Seus dados foram salvos com sucesso.",
@@ -222,7 +275,6 @@ const PreTestForm = () => {
 
       setShowSuccess(true);
 
-      // Reset form
       setFormData({
         nomeCompleto: "",
         cpf: "",
@@ -446,3 +498,4 @@ const PreTestForm = () => {
 };
 
 export default PreTestForm;
+
