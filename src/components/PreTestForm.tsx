@@ -265,6 +265,11 @@ const PreTestForm = () => {
   // Progresso (percentual)
   const progress = Math.round(((currentQuestionIdx + 1) / totalQuestions) * 100);
 
+  // Função para fechar o popup de sucesso
+  const handleCloseSuccess = () => {
+    setShowSuccess(false);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {showSuccess && <SuccessPopup onClose={handleCloseSuccess} />}
