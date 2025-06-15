@@ -191,9 +191,8 @@ const PreTestForm = () => {
         <div className="mb-6">
           <img src="/lovable-uploads/9db4d923-ff04-4e82-9e41-ddfebe49f7fb.png" alt="Academia de Líderes Logo" className="mx-auto h-20 md:h-24 mb-4" />
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-          Academia de Líderes - Módulo I - Pós Teste
-        </h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 text-center">Academia de Líderes - 
+Módulo I </h1>
         <h2 className="text-xl md:text-2xl font-semibold text-yellow-400 mb-3">
           Pós Teste
         </h2>
