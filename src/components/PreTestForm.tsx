@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +16,15 @@ function formatCpfMask(cpf: string) {
     .replace(/^(\d{3})(\d)/, '$1.$2')
     .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
     .replace(/\.(\d{3})(\d)/, '.$1-$2');
+}
+
+// Utilitário para obter a data atual formatada YYYY-MM-DD
+function getTodayString() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 const PreTestForm = () => {
@@ -200,22 +208,6 @@ const PreTestForm = () => {
 
   // MAP fields to columns
   const toPosTesteColumns = () => {
-    // Map the form fields to pos_teste columns using the exact col names from Supabase
-    // (see schema, using | as break only for reference)
-    /*
-      - "Nome Completo"
-      - "CPF"
-      - "01) No seu entendimento, como é classificado a cultura brasile"
-      - "02) Identifique três paradigmas (modelos mentais) de irrespons"
-      - "03) Assinale a simples característica de LIDERANÇA, para prev"
-      - "04) O que fez a Fórmula 1 reduzir drasticamente as fatalidades"
-      - "05) Qual o primeiro passo a ser dado para mudança, dentro dos "
-      - "06) Segundo a pesquisa da GALLUP quantos porcento de pessoas es"
-      - "07) Qual a fórmula extraordinária de resultados sustentáveis"
-      - "08) Qual o pilar que serve como base de sustentação da Lidera"
-      - "09) Como se constrói a CONFIANÇA do líder junto a equipe?"
-      - "10) Defina Comportamento?"
-    */
     return {
       "Nome Completo": formData.nomeCompleto,
       "CPF": formData.cpf,
@@ -238,6 +230,7 @@ const PreTestForm = () => {
       "09) Como se constrói a CONFIANÇA do líder junto a equipe?":
         formData.pergunta09,
       "10) Defina Comportamento?": formData.pergunta10,
+      "Carimbo de data/hora": getTodayString(),
     };
   };
 
@@ -498,4 +491,3 @@ const PreTestForm = () => {
 };
 
 export default PreTestForm;
-
