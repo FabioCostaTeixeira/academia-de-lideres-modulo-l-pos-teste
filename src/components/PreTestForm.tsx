@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 // Função para aplicar máscara visual no CPF
 function formatCpfMask(cpf: string) {
@@ -20,6 +20,8 @@ function formatCpfMask(cpf: string) {
 const PreTestForm = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
+
   const [formData, setFormData] = useState({
     nomeCompleto: "",
     cpf: "",
@@ -34,6 +36,7 @@ const PreTestForm = () => {
     pergunta09: "",
     pergunta10: "",
   });
+
   const questions = [
     {
       id: "pergunta01",
@@ -138,6 +141,8 @@ const PreTestForm = () => {
       ],
     },
   ];
+  const totalQuestions = questions.length;
+
   const handleInputChange = (field: string, value: string) => {
     // Se o campo for CPF, salva apenas os dígitos
     if (field === "cpf") {
@@ -153,6 +158,7 @@ const PreTestForm = () => {
       }));
     }
   };
+
   const validateForm = () => {
     const requiredFields = [
       "nomeCompleto",
@@ -189,6 +195,7 @@ const PreTestForm = () => {
     }
     return true;
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
@@ -226,6 +233,7 @@ const PreTestForm = () => {
         pergunta09: "",
         pergunta10: "",
       });
+      setCurrentQuestionIdx(0);
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
@@ -237,6 +245,22 @@ const PreTestForm = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Funções para navegação entre perguntas
+  const nextQuestion = () => {
+    if (currentQuestionIdx < totalQuestions - 1) setCurrentQuestionIdx(idx => idx + 1);
+  };
+  const prevQuestion = () => {
+    if (currentQuestionIdx > 0) setCurrentQuestionIdx(idx => idx - 1);
+  };
+
+  // Elementos de perguntas
+  const question = questions[currentQuestionIdx];
+  const questionKey = question.id as keyof typeof formData;
+
+  // Progresso (percentual)
+  const progress = Math.round(((currentQuestionIdx + 1) / totalQuestions) * 100);
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
@@ -300,7 +324,7 @@ const PreTestForm = () => {
           </CardContent>
         </Card>
 
-        {/* Seção de Avaliação */}
+        {/* Seção de Avaliação com navegação e progresso */}
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white text-xl">
@@ -311,50 +335,86 @@ const PreTestForm = () => {
                 Ao responder, considere que cada questão possui uma única alternativa correta.
               </p>
             </div>
+            {/* Barra de Progresso */}
+            <div className="mt-4">
+              <span className="text-gray-300 text-sm">{`Pergunta ${currentQuestionIdx + 1} de ${totalQuestions}`}</span>
+              <div className="mt-2">
+                <Progress value={progress} className="h-2 bg-slate-600" />
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-8">
-            {questions.map((question) => (
-              <div
-                key={question.id}
-                className="space-y-4 p-4 bg-slate-700/30 rounded-lg"
+            <div className="space-y-4 p-4 bg-slate-700/30 rounded-lg animate-fade-in">
+              <h3 className="text-white font-medium text-sm md:text-base leading-relaxed">
+                {question.title} *
+              </h3>
+              <RadioGroup
+                value={formData[questionKey] as string}
+                onValueChange={(value) =>
+                  handleInputChange(question.id, value)
+                }
+                className="space-y-3"
               >
-                <h3 className="text-white font-medium text-sm md:text-base leading-relaxed">
-                  {question.title} *
-                </h3>
-
-                <RadioGroup
-                  value={formData[question.id as keyof typeof formData] as string}
-                  onValueChange={(value) =>
-                    handleInputChange(question.id, value)
-                  }
-                  className="space-y-3"
-                >
-                  {question.options.map((option, optionIndex) => (
-                    <div
-                      key={optionIndex}
-                      className="flex items-start space-x-3"
+                {question.options.map((option, optionIndex) => (
+                  <div key={optionIndex} className="flex items-start space-x-3">
+                    <RadioGroupItem
+                      value={option}
+                      id={`${question.id}-${optionIndex}`}
+                      className="border-white text-white mt-1 flex-shrink-0"
+                    />
+                    <Label
+                      htmlFor={`${question.id}-${optionIndex}`}
+                      className="text-gray-300 text-sm leading-relaxed cursor-pointer flex-1"
                     >
-                      <RadioGroupItem
-                        value={option}
-                        id={`${question.id}-${optionIndex}`}
-                        className="border-white text-white mt-1 flex-shrink-0"
-                      />
-                      <Label
-                        htmlFor={`${question.id}-${optionIndex}`}
-                        className="text-gray-300 text-sm leading-relaxed cursor-pointer flex-1"
-                      >
-                        {option}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-            ))}
+                      {option}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+
+            {/* Navegação entre perguntas */}
+            <div className="flex justify-between gap-4 pt-2">
+              <Button
+                type="button"
+                onClick={prevQuestion}
+                disabled={currentQuestionIdx === 0}
+                variant="secondary"
+                className="px-6 py-2"
+              >
+                Anterior
+              </Button>
+              {currentQuestionIdx < totalQuestions - 1 ? (
+                <Button
+                  type="button"
+                  onClick={nextQuestion}
+                  disabled={!formData[questionKey]}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-2"
+                >
+                  Próxima
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !formData[questionKey]}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    "Enviar Formulário"
+                  )}
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
 
         {/* Submit Button */}
-        <div className="flex justify-center pt-6">
+        {/* <div className="flex justify-center pt-6">
           <Button
             type="submit"
             disabled={isSubmitting}
@@ -369,10 +429,9 @@ const PreTestForm = () => {
               "Enviar Formulário"
             )}
           </Button>
-        </div>
+        </div> */}
       </form>
     </div>
   );
 };
 export default PreTestForm;
-
