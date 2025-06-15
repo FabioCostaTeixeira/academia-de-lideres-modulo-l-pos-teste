@@ -6,6 +6,16 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+
+// Função para aplicar máscara visual no CPF
+function formatCpfMask(cpf: string) {
+  const numbers = cpf.replace(/\D/g, "").slice(0, 11); // Limita a 11 dígitos numéricos
+  return numbers
+    .replace(/^(\d{3})(\d)/, '$1.$2')
+    .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1-$2');
+}
+
 const PreTestForm = () => {
   const {
     toast
@@ -69,10 +79,19 @@ const PreTestForm = () => {
     options: ["São escolhas dentro de um padrão social.", "São alinhamento de valores e atitudes.", "São ações e atitudes visíveis impulsionadas pelas crenças, hábitos e valores.", "É a motivação interna e externas que forma o caráter de um indivíduo."]
   }];
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    // Se o campo for CPF, salva apenas os dígitos
+    if(field === "cpf") {
+      const onlyNumbers = value.replace(/\D/g, "").slice(0, 11);
+      setFormData(prev => ({
+        ...prev,
+        cpf: onlyNumbers
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
   };
   const validateForm = () => {
     const requiredFields = ['nomeCompleto', 'cpf', 'cidade', 'estado', 'pergunta01', 'pergunta02', 'pergunta03', 'pergunta04', 'pergunta05', 'pergunta06', 'pergunta07', 'pergunta08', 'pergunta09', 'pergunta10'];
@@ -82,12 +101,12 @@ const PreTestForm = () => {
       }
     }
 
-    // Validate CPF format (only numbers)
+    // Validar formato do CPF (apenas números, 11 dígitos)
     const cpfRegex = /^\d{11}$/;
     if (!cpfRegex.test(formData.cpf)) {
       toast({
         title: "CPF Inválido",
-        description: "Digite somente números no formato 12345678910",
+        description: "Digite somente números no formato 123.456.789-10",
         variant: "destructive"
       });
       return false;
@@ -166,12 +185,28 @@ const PreTestForm = () => {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="nomeCompleto" className="text-gray-300">Nome Completo *</Label>
-              <Input id="nomeCompleto" value={formData.nomeCompleto} onChange={e => handleInputChange('nomeCompleto', e.target.value)} className="bg-slate-700 border-slate-600 text-white" required />
+              <Input
+                id="nomeCompleto"
+                value={formData.nomeCompleto}
+                onChange={e => handleInputChange('nomeCompleto', e.target.value)}
+                className="bg-slate-700 border-slate-600 text-white"
+                required
+              />
             </div>
 
             <div>
-              <Label htmlFor="cpf" className="text-gray-300">CPF (somente números) *</Label>
-              <Input id="cpf" value={formData.cpf} onChange={e => handleInputChange('cpf', e.target.value.replace(/\D/g, ''))} placeholder="Digite somente números no formato 12345678910" className="bg-slate-700 border-slate-600 text-white" maxLength={11} required />
+              <Label htmlFor="cpf" className="text-gray-300">CPF *</Label>
+              <Input
+                id="cpf"
+                inputMode="numeric"
+                autoComplete="off"
+                value={formatCpfMask(formData.cpf)}
+                onChange={e => handleInputChange('cpf', e.target.value)}
+                placeholder="123.456.789-10"
+                className="bg-slate-700 border-slate-600 text-white"
+                maxLength={14} // 14 caracteres contando pontos e hífen
+                required
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
