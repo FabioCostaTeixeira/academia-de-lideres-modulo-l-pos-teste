@@ -167,7 +167,7 @@ const PreTestForm = () => {
       {/* Header */}
       <div className="text-center mb-8">
         <div className="mb-6">
-          <img src="https://fomrs-acad-lider.lovable.app/lovable-uploads/cd5b5d51-f39e-4ded-9d8a-686459ccc11b.png" alt="Academia de Líderes Logo" className="mx-auto h-20 md:h-24 mb-4" />
+          <img src="/lovable-uploads/362217eb-fd70-4ec7-a2d0-938f7e255b70.png" alt="Academia de Líderes Logo" className="mx-auto h-20 md:h-24 mb-4" />
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
           Academia de Líderes Módulo l
